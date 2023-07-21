@@ -1,12 +1,8 @@
 package com.mh.todaydiary.ui.adddiary
 
-import android.location.Geocoder
-import android.os.SystemClock
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mh.todaydiary.data.repository.Diary
-import com.mh.todaydiary.data.repository.DiaryRepository
 import com.mh.todaydiary.domain.DiaryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +14,7 @@ import javax.inject.Inject
 
 data class AddEditDiaryUiState(
     val date: Date = Date(),
-    var context: List<String> = emptyList(),
+    var context: List<String> = listOf(""),
     val tag: List<String> = emptyList(),
     val loc: List<String> = emptyList(),
     val isLoading: Boolean = false,
@@ -34,7 +30,21 @@ class AddEditDiaryViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     fun loadDiary(diary: Diary) {
-        _uiState.update { it.copy(date = diary.date, context = diary.context, tag = diary.tag, loc = diary.loc) }
+        _uiState.update { it.copy(date = diary.date, context = diary.context.toMutableList(), tag = diary.tag, loc = diary.loc) }
+    }
+
+    fun addContent(content: String) {
+        _uiState.update {
+            val addedList = it.context.toMutableList().apply { add(content) }
+            it.copy(context = addedList)
+        }
+    }
+
+    fun removeContent(index: Int) {
+        _uiState.update {
+            val removedList = it.context.toMutableList().apply { removeAt(index) }
+            it.copy(context = removedList)
+        }
     }
 
     fun saveDiary() {
