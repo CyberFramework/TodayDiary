@@ -3,7 +3,6 @@ package com.mh.todaydiary.ui.adddiary
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,7 +23,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -53,9 +51,11 @@ fun AddEditDiaryScreen(
     Column(Modifier.fillMaxSize()) {
         LazyColumn(Modifier.weight(1f)) {
             itemsIndexed(uiState.context) { index, content ->
-                ContentContainer(content = if (content.startsWith("content://")) content.toUri() else content) {
-                    viewModel.removeContent(index)
-                }
+                ContentContainer(
+                    content = if (content.startsWith("content://")) content.toUri() else content,
+                    onDelete = { viewModel.removeContent(index) },
+                    onChange = { viewModel.updateContent(index, it) }
+                )
             }
         }
 
@@ -83,7 +83,7 @@ fun AddEditDiaryScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ContentContainer(content: Any, onDelete: () -> Unit) {
+private fun ContentContainer(content: Any, onDelete: () -> Unit, onChange: (String) -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onDelete) {
             Icon(imageVector = Icons.Rounded.Delete, contentDescription = "delete")
@@ -101,11 +101,9 @@ private fun ContentContainer(content: Any, onDelete: () -> Unit) {
                 )
 
                 is String -> {
-                    var text by remember { mutableStateOf(content) }
-
                     TextField(
-                        value = text, onValueChange = {
-                            text = it
+                        value = content, onValueChange = {
+                            onChange(it)
                         })
                 }
             }

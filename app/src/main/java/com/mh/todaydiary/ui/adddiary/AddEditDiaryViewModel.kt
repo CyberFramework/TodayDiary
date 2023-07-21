@@ -47,6 +47,14 @@ class AddEditDiaryViewModel @Inject constructor(
         }
     }
 
+    fun updateContent(index: Int, content: String) {
+        _uiState.update {
+            val updatedList = it.context.toMutableList()
+            updatedList[index] = content
+            it.copy(context = updatedList)
+        }
+    }
+
     fun saveDiary() {
         viewModelScope.launch {
             addDiaryUseCase(
