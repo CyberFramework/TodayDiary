@@ -12,8 +12,14 @@ interface DiaryDao {
     @Query("SELECT * FROM diaries")
     fun observeDiaries(): Flow<List<DiaryEntity>>
 
+    @Query("SELECT * FROM diaries WHERE time = :time")
+    fun observeDiary(time: Long): Flow<DiaryEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDiary(planet: DiaryEntity)
+
+    @Query("SELECT * FROM diaries WHERE time = :time")
+    suspend fun getDiary(time: Long): DiaryEntity?
 
     @Query("DELETE FROM diaries WHERE time = :time")
     suspend fun deleteDiary(time: Long)

@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.mh.todaydiary.data.repository.Diary
 
 @Composable
 fun AddEditDiaryScreen(

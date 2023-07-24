@@ -1,5 +1,6 @@
 package com.mh.todaydiary.data.repository
 
+import java.io.Serializable
 import java.util.Date
 
 data class Diary(
@@ -8,4 +9,4 @@ data class Diary(
     val context: List<String>,
     val loc: List<String>,
     val tag: List<String>
-)
+) : Serializable

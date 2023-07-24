@@ -1,5 +1,6 @@
 package com.mh.todaydiary.ui.diarylist
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -22,6 +23,7 @@ import com.mh.todaydiary.data.repository.Diary
 @Composable
 fun DiaryListScreen(
     addDiary: () -> Unit,
+    editDiary: (Long) -> Unit,
     diaryListViewModel: DiaryListViewModel = hiltViewModel(),
 ) {
     val diaryList by diaryListViewModel.uiState.collectAsState()
@@ -33,13 +35,16 @@ fun DiaryListScreen(
     }) { defaultPadding ->
         LazyColumn(Modifier.fillMaxSize().padding(defaultPadding)) {
             items(diaryList.diaries) {
-                DiaryPreviewIcon(it)
+                DiaryPreviewIcon(it) { editDiary(it.time) }
             }
         }
     }
 }
 
 @Composable
-fun DiaryPreviewIcon(diary: Diary) {
-    Text(text = diary.context.joinToString())
+fun DiaryPreviewIcon(diary: Diary, onClick: () -> Unit) {
+    Text(
+        text = diary.context.joinToString(),
+        modifier = Modifier.clickable { onClick() }
+    )
 }

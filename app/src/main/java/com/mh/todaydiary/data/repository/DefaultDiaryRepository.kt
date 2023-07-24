@@ -13,6 +13,10 @@ class DefaultDiaryRepository @Inject constructor(
         return localDataSource.getDiariesFlow()
     }
 
+    override fun getDiaryFlow(time: Long): Flow<WorkResult<Diary?>> {
+        return localDataSource.getDiaryFlow(time)
+    }
+
     override suspend fun addDiary(diary: Diary) {
         remoteDataSource.addDiary(diary)
         localDataSource.addDiary(diary)

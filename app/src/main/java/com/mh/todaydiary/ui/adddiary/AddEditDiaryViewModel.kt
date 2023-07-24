@@ -1,12 +1,16 @@
 package com.mh.todaydiary.ui.adddiary
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mh.todaydiary.data.repository.Diary
+import com.mh.todaydiary.data.repository.DiaryRepository
+import com.mh.todaydiary.data.repository.WorkResult
 import com.mh.todaydiary.domain.DiaryUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
@@ -24,13 +28,40 @@ data class AddEditDiaryUiState(
 
 @HiltViewModel
 class AddEditDiaryViewModel @Inject constructor(
-    private val addDiaryUseCase: DiaryUseCase
+    savedStateHandle: SavedStateHandle,
+    private val addDiaryUseCase: DiaryUseCase,
+    private val diaryRepository: DiaryRepository
 ): ViewModel() {
+    private val timeId: Long? = savedStateHandle["time"]
+
     private val _uiState = MutableStateFlow(AddEditDiaryUiState())
     val uiState = _uiState.asStateFlow()
 
-    fun loadDiary(diary: Diary) {
-        _uiState.update { it.copy(date = diary.date, context = diary.context.toMutableList(), tag = diary.tag, loc = diary.loc) }
+    init {
+        timeId?.let {
+            loadDiary(it)
+        }
+    }
+
+    private fun loadDiary(time: Long) {
+        _uiState.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            val result = diaryRepository.getDiaryFlow(time).first()
+            if (result !is WorkResult.Success || result.data == null) {
+                _uiState.update { it.copy(isLoading = false) }
+            } else {
+                val diary = result.data
+                _uiState.update {
+                    it.copy(
+                        date = diary.date,
+                        context = diary.context,
+                        tag = diary.tag,
+                        loc = diary.loc,
+                        isLoading = false
+                    )
+                }
+            }
+        }
     }
 
     fun addContent(content: String) {

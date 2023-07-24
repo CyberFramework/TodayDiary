@@ -15,6 +15,12 @@ class RoomLocalDataSource(
         }
     }
 
+    override fun getDiaryFlow(time: Long): Flow<WorkResult<Diary?>> {
+        return diaryDao.observeDiary(time).map {
+            WorkResult.Success(it.toDiary())
+        }
+    }
+
     override suspend fun addDiary(diary: Diary) {
         diaryDao.insertDiary(diary.toDiaryEntity())
     }
