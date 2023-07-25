@@ -1,7 +1,12 @@
 package com.mh.todaydiary.ui.adddiary
 
+import android.Manifest
+import android.content.Intent
 import android.net.Uri
+import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,17 +28,14 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.mh.todaydiary.data.repository.Diary
 
 @Composable
 fun AddEditDiaryScreen(
@@ -41,13 +43,28 @@ fun AddEditDiaryScreen(
     onComplete: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val mContext = LocalContext.current
     val activityResultContracts = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         uri?.let {
             viewModel.addContent(it.toString())
+            if (Build.VERSION.SDK_INT >= 30) {
+                mContext.contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
         }
     }
+
+    val requestPermissionLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                activityResultContracts.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            } else {
+                Toast.makeText(mContext, "권한 요청을 거부하면 사진을 사용할 수 없습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
 
     Column(Modifier.fillMaxSize()) {
         LazyColumn(Modifier.weight(1f)) {
@@ -69,7 +86,11 @@ fun AddEditDiaryScreen(
             }
 
             Button(onClick = {
-                activityResultContracts.launch("image/*")
+                if (Build.VERSION.SDK_INT >= 30) {
+                    activityResultContracts.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                } else {
+                    requestPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                }
             }) {
                 Text(text = "이미지")
             }
