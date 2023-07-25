@@ -26,7 +26,10 @@ fun MainNavigation(
 
         composable(
             "add_diary?time={time}",
-            arguments = listOf(navArgument("time") { type = NavType.LongType })
+            arguments = listOf(navArgument("time") {
+                type = NavType.LongType
+                defaultValue = 0
+            })
         ) {
             AddEditDiaryScreen(
                 onComplete = { navController.popBackStack() },

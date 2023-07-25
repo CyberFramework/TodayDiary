@@ -32,14 +32,14 @@ class AddEditDiaryViewModel @Inject constructor(
     private val addDiaryUseCase: DiaryUseCase,
     private val diaryRepository: DiaryRepository
 ): ViewModel() {
-    private val timeId: Long? = savedStateHandle["time"]
+    private val timeId: Long = checkNotNull(savedStateHandle["time"])
 
     private val _uiState = MutableStateFlow(AddEditDiaryUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
-        timeId?.let {
-            loadDiary(it)
+        if (timeId != 0L) {
+            loadDiary(timeId)
         }
     }
 
