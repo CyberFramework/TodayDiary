@@ -1,16 +1,19 @@
 package com.mh.todaydiary.ui.diarylist
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -22,14 +25,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.mh.todaydiary.R
 import com.mh.todaydiary.data.repository.Diary
+import com.mh.todaydiary.ui.diarylist.ui.theme.Pastel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiaryListScreen(
     addDiary: () -> Unit,
@@ -44,23 +52,39 @@ fun DiaryListScreen(
             Icon(imageVector = Icons.Default.Add, contentDescription = null)
         }
     }) { defaultPadding ->
-        LazyColumn(
-            Modifier
-                .fillMaxSize()
-                .padding(defaultPadding)
-        ) {
-            items(diaryList.diaries) {
-                DiaryPreviewIcon(it,
-                    onClick = { editDiary(it.time) },
-                    onLongClick = { deleteDiaryTime = it.time }
+        Box(Modifier.padding(defaultPadding)) {
+            if (diaryList.diaries.isNotEmpty()) {
+                DiaryList(
+                    diaries = diaryList.diaries,
+                    onEditItem = editDiary,
+                    onDeleteItem = { deleteDiaryTime = it }
                 )
             }
         }
+    }
 
-        if (deleteDiaryTime > 0) {
-            DeleteDialog(
-                onConfirm = { diaryListViewModel.deleteDiary(deleteDiaryTime) },
-                onDismiss = { deleteDiaryTime = 0 }
+    if (deleteDiaryTime > 0) {
+        DeleteDialog(
+            onConfirm = { diaryListViewModel.deleteDiary(deleteDiaryTime) },
+            onDismiss = { deleteDiaryTime = 0 }
+        )
+    }
+}
+
+@Composable
+private fun DiaryList(diaries: List<Diary>, onEditItem: (Long) -> Unit, onDeleteItem: (Long) -> Unit) {
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(100.dp),
+        modifier = Modifier
+            .fillMaxSize(),
+        contentPadding = PaddingValues(5.dp)
+    ) {
+        items(diaries) {
+            DiaryPreviewIcon(
+                color = Pastel.colorArray[(it.time % 10).toInt()],
+                contents = it.context,
+                onClick = { onEditItem(it.time) },
+                onLongClick = { onDeleteItem(it.time) }
             )
         }
     }
@@ -68,14 +92,33 @@ fun DiaryListScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun DiaryPreviewIcon(diary: Diary, onClick: () -> Unit, onLongClick: () -> Unit) {
-    Text(
-        text = diary.context.joinToString(),
-        modifier = Modifier.combinedClickable(
-            onClick = onClick,
-            onLongClick = onLongClick
-        )
-    )
+private fun DiaryPreviewIcon(contents: List<String>, color: Color, onClick: () -> Unit, onLongClick: () -> Unit) {
+    var imageUri = ""
+    var firstText = ""
+
+    contents.forEach {
+        if (it.startsWith("content://") && imageUri.isEmpty()) {
+            imageUri = it
+        } else if (firstText.isEmpty()) {
+            firstText = it
+        } else if (imageUri.isNotEmpty() && firstText.isNotEmpty()) {
+            return@forEach
+        }
+    }
+
+    Box(
+        modifier = Modifier
+            .size(100.dp)
+            .background(color)
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+        AsyncImage(model = imageUri, contentDescription = firstText, contentScale = ContentScale.Crop)
+        Text(text = firstText, overflow = TextOverflow.Ellipsis)
+    }
 }
 
 @Composable

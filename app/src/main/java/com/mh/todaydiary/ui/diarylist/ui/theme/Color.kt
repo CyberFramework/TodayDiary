@@ -9,3 +9,18 @@ val Pink80 = Color(0xFFEFB8C8)
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
+
+object Pastel {
+    val colorArray = arrayOf(
+        Color(0xFFFFB3B3),
+        Color(0xFFFFD9B3),
+        Color(0xFFFFFFB3),
+        Color(0xFFD9FFB3),
+        Color(0xFFB3FFB3),
+        Color(0xFFB3FFFF),
+        Color(0xFFB3D9FF),
+        Color(0xFFB3B3FF),
+        Color(0xFFD9B3FF),
+        Color(0xFFFFB3FF),
+    )
+}
