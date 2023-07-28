@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -36,7 +37,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.mh.todaydiary.R
 import com.mh.todaydiary.data.repository.Diary
+import com.mh.todaydiary.ui.custom.CalendarWithAdjacentMonths
 import com.mh.todaydiary.ui.diarylist.ui.theme.Pastel
+import java.time.LocalDate
 
 @Composable
 fun DiaryListScreen(
@@ -52,7 +55,9 @@ fun DiaryListScreen(
             Icon(imageVector = Icons.Default.Add, contentDescription = null)
         }
     }) { defaultPadding ->
-        Box(Modifier.padding(defaultPadding)) {
+        Column(Modifier.padding(defaultPadding)) {
+            CalendarWithAdjacentMonths()
+
             if (diaryList.diaries.isNotEmpty()) {
                 DiaryList(
                     diaries = diaryList.diaries,
@@ -60,6 +65,7 @@ fun DiaryListScreen(
                     onDeleteItem = { deleteDiaryTime = it }
                 )
             }
+
         }
     }
 
