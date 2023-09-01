@@ -17,6 +17,11 @@ class DefaultDiaryRepository @Inject constructor(
         return localDataSource.getDiaryFlow(time)
     }
 
+    override suspend fun refreshDiaries() {
+        val diaries = localDataSource.getDiariesByDuration(0L, Long.MAX_VALUE)
+        localDataSource.setDiary(diaries)
+    }
+
     override suspend fun addDiary(diary: Diary) {
         remoteDataSource.addDiary(diary)
         localDataSource.addDiary(diary)

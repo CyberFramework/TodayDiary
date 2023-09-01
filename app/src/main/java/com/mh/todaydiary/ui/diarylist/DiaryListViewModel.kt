@@ -20,15 +20,17 @@ data class DiaryListUiState(
 
 @HiltViewModel
 class DiaryListViewModel @Inject constructor(
-    private val diaryRepository: DiaryRepository
+    private val diaryRepository: DiaryRepository,
 ) : ViewModel() {
     private val diaries = diaryRepository.getDiariesFlow()
+    private var start: Long = 0
+    private var end: Long = Long.MAX_VALUE
 
     val uiState = diaries.map {
         when (it) {
             is WorkResult.Error -> DiaryListUiState(isError = true)
             is WorkResult.Loading -> DiaryListUiState(isLoading = true)
-            is WorkResult.Success -> DiaryListUiState(diaries = it.data)
+            is WorkResult.Success -> DiaryListUiState(diaries = it.data.filter { diary -> diary.time in start..end })
         }
     }.stateIn(
         scope = viewModelScope,
@@ -39,6 +41,14 @@ class DiaryListViewModel @Inject constructor(
     fun deleteDiary(time: Long) {
         viewModelScope.launch {
             diaryRepository.deleteDiary(time)
+        }
+    }
+
+    fun getDiariesByDuration(s: Long, e: Long) {
+        viewModelScope.launch {
+            start = s * 1000
+            end = e * 1000
+            diaryRepository.refreshDiaries()
         }
     }
 }

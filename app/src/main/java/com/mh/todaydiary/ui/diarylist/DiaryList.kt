@@ -38,8 +38,7 @@ import coil.compose.AsyncImage
 import com.mh.todaydiary.R
 import com.mh.todaydiary.data.repository.Diary
 import com.mh.todaydiary.ui.custom.CalendarWithAdjacentMonths
-import com.mh.todaydiary.ui.diarylist.ui.theme.Pastel
-import java.time.LocalDate
+import com.mh.todaydiary.ui.theme.Pastel
 
 @Composable
 fun DiaryListScreen(
@@ -56,7 +55,7 @@ fun DiaryListScreen(
         }
     }) { defaultPadding ->
         Column(Modifier.padding(defaultPadding)) {
-            CalendarWithAdjacentMonths()
+            CalendarWithAdjacentMonths(onDateClick = diaryListViewModel::getDiariesByDuration)
 
             if (diaryList.diaries.isNotEmpty()) {
                 DiaryList(

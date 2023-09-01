@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.Flow
 interface LocalDataSource {
     fun getDiariesFlow(): Flow<WorkResult<List<Diary>>>
     fun getDiaryFlow(time: Long): Flow<WorkResult<Diary?>>
+    suspend fun getDiariesByDuration(start: Long, end: Long): List<Diary>
+    suspend fun setDiary(diaries: List<Diary>)
     suspend fun addDiary(diary: Diary)
     suspend fun deleteDiary(time: Long)
 }

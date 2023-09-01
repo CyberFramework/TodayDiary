@@ -21,6 +21,14 @@ class RoomLocalDataSource(
         }
     }
 
+    override suspend fun setDiary(diaries: List<Diary>) {
+        diaryDao.setDiaries(diaries.map { it.toDiaryEntity() })
+    }
+
+    override suspend fun getDiariesByDuration(start: Long, end: Long): List<Diary> {
+        return diaryDao.getDiaryByDuration(start, end).map { it.toDiary() }
+    }
+
     override suspend fun addDiary(diary: Diary) {
         diaryDao.insertDiary(diary.toDiaryEntity())
     }

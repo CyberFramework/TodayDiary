@@ -2,6 +2,7 @@ package com.mh.todaydiary.ui.custom
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,17 +29,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.mh.todaydiary.ui.theme.Shapes
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CalendarWithAdjacentMonths(today: LocalDate = LocalDate.now()) {
+fun CalendarWithAdjacentMonths(today: LocalDate = LocalDate.now(), onDateClick: (Long, Long) -> Unit = {_,_->}) {
     val pageState = rememberPagerState(Int.MAX_VALUE / 2)
     val scope = rememberCoroutineScope()
 
-    Column {
+    Column(
+        Modifier.background(color = MaterialTheme.colorScheme.background, shape = Shapes.medium)
+    ) {
         CalendarHeader(
             displayMonth = today.plusMonths(pageState.currentPage - (Int.MAX_VALUE / 2).toLong()),
             onPrev = { scope.launch { pageState.scrollToPage(pageState.currentPage - 1) } },
@@ -50,7 +56,10 @@ fun CalendarWithAdjacentMonths(today: LocalDate = LocalDate.now()) {
             beyondBoundsPageCount = 1,
             state = pageState,
         ) {
-            CalendarDays(monthToDisplay = today.plusMonths(it - (Int.MAX_VALUE / 2).toLong()))
+            CalendarDays(
+                monthToDisplay = today.plusMonths(it - (Int.MAX_VALUE / 2).toLong()),
+                onClick = onDateClick
+            )
         }
     }
 }
@@ -84,7 +93,7 @@ fun CalendarHeader(displayMonth: LocalDate, onPrev: () -> Unit, onNext: () -> Un
 }
 
 @Composable
-fun CalendarDays(monthToDisplay: LocalDate) {
+fun CalendarDays(monthToDisplay: LocalDate, onClick: (Long, Long) -> Unit) {
     val today = LocalDate.now()
     val startDate = monthToDisplay.withDayOfMonth(1)
     val prevMonth = monthToDisplay.minusMonths(1)
@@ -117,7 +126,10 @@ fun CalendarDays(monthToDisplay: LocalDate) {
                 modifier = Modifier
                     .aspectRatio(1f)
                     .padding(2.dp)
-                    .background(color = backgroundColor),
+                    .background(color = backgroundColor)
+                    .clickable {
+                        onClick(dateToDisplay.atStartOfDay().toEpochSecond(ZoneOffset.UTC), dateToDisplay.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC))
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
